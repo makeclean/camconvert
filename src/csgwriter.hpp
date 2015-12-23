@@ -1,8 +1,13 @@
+#include <fstream>
+#include <string>
+
 class MakeCSG {
 public:
-  MakeCSG();
+  MakeCSG(std::string filename);
   ~MakeCSG();
 public:
   void WriteVolumes();
   void WriteSurfaces();
+private:
+  std::ofstream output;
 };

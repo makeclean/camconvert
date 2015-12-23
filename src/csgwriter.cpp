@@ -4,14 +4,18 @@
 #include <list>
 #include <iostream>
 
-MakeCSG::MakeCSG() {
-  std::cout << "*...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+...." << std::endl;
-  std::cout << "DEFAULTS                                                              PRECISIO  " << std::endl;
-  std::cout << "GEOBEGIN                                                              COMBNAME  " << std::endl;
-  std::cout << "      0    0          " << std::endl;
+MakeCSG::MakeCSG(std::string filename) {
+  output.open(filename);
+
+  //  output
+  output << "*...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+...." << std::endl;
+  output << "DEFAULTS                                                              PRECISIO " << std::endl;
+  output << "GEOBEGIN                                                              COMBNAME " << std::endl;
+  output << "      0    0          " << std::endl;
 }
 
 MakeCSG::~MakeCSG() {
+  output.close();
 }
 
 // write the volumes 
@@ -23,9 +27,9 @@ void MakeCSG::WriteVolumes() {
   for ( it = volume_list.begin()  ; it != volume_list.end() ; ++it ) {
     // get the volume
     Volume *vol = VolumeManager::Instance()->GetVolume(*it);
-    vol->PrintFluka();
+    vol->PrintFluka(output);
   }
-  std::cout << "GEOEND" << std::endl;
+  output << "GEOEND" << std::endl;
 }
 
 // write out all the surface descriptions
@@ -38,7 +42,7 @@ void MakeCSG::WriteSurfaces() {
   for ( it = surface_list.begin() ; it != surface_list.end() ; ++it ) {
     // get the surface
     Surface *surf = SurfaceManager::Instance()->GetSurface(*it);
-    surf->PrintFluka();
+    surf->PrintFluka(output);
   }
-  std::cout << "END" << std::endl;
+  output << "END" << std::endl;
 }

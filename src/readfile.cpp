@@ -138,7 +138,6 @@ int ReadFile::ReadSurface() {
   Surface* new_surface;
 
   Surface::coefficients surface_coeffs = {};
-
   // assume that we first read the first line of 
   int surfid = ToInt(tokens[0]); // get the surface id
   int num_entries = ToInt(tokens[1]); // get the number of parameters
@@ -166,7 +165,6 @@ int ReadFile::ReadSurface() {
   }
   // make new surface
   new_surface = new Surface(surface_coeffs,surfid);
-  
   // add the new surface to the manager
   SurfaceManager::Instance()->AddSurface(new_surface);
 
@@ -260,7 +258,7 @@ int ReadFile::ReadVolume() {
 
   std::vector<int> surface_numbers;
   // loop over the surface numbers and push them back
-  for ( int i = 6 ; i < 11 ; i++ ) {
+  for ( int i = 6 ; i < 12 ; i++ ) {
     if(ToInt(tokens[i]) > 0 )
       surface_numbers.push_back(ToInt(tokens[i]));
     else
@@ -270,6 +268,7 @@ int ReadFile::ReadVolume() {
    // add the cell name
   std::string cell_name = tokens[12]; 
 
+  /*
   // indicates a continue line
   if(ToInt(tokens[11]) == -1) {
     counter++;
@@ -285,9 +284,37 @@ int ReadFile::ReadVolume() {
   } else { // its a valid surface number
     surface_numbers.push_back(ToInt(tokens[11]));
   }
-
+  */
+  if(ToInt(tokens[11]) == -1 ) {
+    bool finished = false;
+    while(!finished) {
+      counter++;
+      tokens = ReadVolumeContinueLine(lines[counter]);
+      // loop over the tokens - there might not be 18
+      for ( int i = 0 ; i < tokens.size()-1 ; i++ ) {
+	// if the token is not 0 or -1
+	if(ToInt(tokens[i]) > 0 ) {
+	  // this is a valid surface number
+	  surface_numbers.push_back(ToInt(tokens[i]));
+	  // ccheck to see if were done
+	  if( i == tokens.size()-2) {
+	    finished = true;
+	    break;
+	  }
+	} else if (ToInt(tokens[i]) == 0 ) {
+	  // then we are done
+	  finished = true;
+	  break;
+	} else if ( ToInt(tokens[i]) == -1 ) {
+	  // this is a continue statement
+	  break;
+	} 
+      }
+    }
+  }
+    
   // it may be the case there there are more surfaces to read on another line
-  
+ 
   
   // the next line might have more surfaces to add 
   Volume *new_volume;

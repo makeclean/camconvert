@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
   file->ProcessContents();
   
   // make class to handle making and writing the output
-  MakeCSG *csg = new MakeCSG();
+  MakeCSG *csg = new MakeCSG("output.inp");
   csg->WriteSurfaces();
   csg->WriteVolumes();
   

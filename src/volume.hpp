@@ -1,6 +1,7 @@
 #include "surface.hpp"
 #include <vector>
 #include <string>
+#include <fstream>
 
 #ifndef VOLUME_HPP
 #define VOLUME_HPP 1
@@ -19,8 +20,9 @@ public:
   int GetId();
   int Sense(Surface *surface);
   std::vector<Surface*> GetSurfaces();
-  void PrintFluka();
-
+  void PrintFluka(std::ofstream &output);
+  void Print();
+  
 private:
   bool PointInVolume(double x, double y, double z);
   void ConnectSurfaces();

@@ -1,3 +1,5 @@
+#include <fstream>
+
 #ifndef SURFACE_HPP
 #define SURFACE_HPP 1
 
@@ -6,6 +8,7 @@ enum SURFACE_TYPE { UNKNOWN,
 		    PLANE_Y,
 		    PLANE_Z,
 		    GENERAL_PLANE,
+		    SPHERE,
 		    CYLINDER_X,
 		    CYLINDER_Y,
 		    CYLINDER_Z,
@@ -13,7 +16,9 @@ enum SURFACE_TYPE { UNKNOWN,
 		    CONE_Y,
 		    CONE_Z,
 		    ELLIPSOID,
-		    ELLIPTICAL_CYLINDER,      
+		    ELLIPTICAL_CYLINDER_X,
+		    ELLIPTICAL_CYLINDER_Y,      
+		    ELLIPTICAL_CYLINDER_Z,      
 		    GENERAL_QUADRATIC};
 		   
 class Surface { 
@@ -40,7 +45,7 @@ public:
   int GetId();
   int GetSurfaceType();
   int Evaluate(double x, double y, double z);
-  void PrintFluka();
+  void PrintFluka(std::ofstream &output);
 
 private:
   void SetCoefficients(coefficients surface_coefficients);

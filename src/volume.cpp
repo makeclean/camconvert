@@ -59,15 +59,19 @@ std::vector<Surface*> Volume::GetSurfaces() {
   return boundingSurfaces;
 }
 
+// print a simple text based description of the volume
+void Volume::Print() {
+}
+
 // print the fluka description of the volume
-void Volume::PrintFluka() {
-  std::cout << name << "     5 "; 
+void Volume::PrintFluka(std::ofstream &output) {
+  output << name << "     5 "; 
   std::vector<Surface*> surfaces = GetSurfaces();
   Surface *surface;
   for ( int i = 0 ; i < surfaces.size() ; i++ ) {
     int eval = Sense(surfaces[i]);
-    if( eval == 1 ) std::cout << "+S"<<surfaces[i]->GetId() << " ";
-    if( eval == -1 ) std::cout << "-S"<<surfaces[i]->GetId() << " ";
+    if( eval == 1 ) output << "-S"<<surfaces[i]->GetId() << " ";
+    if( eval == -1 ) output << "+S"<<surfaces[i]->GetId() << " ";
   }
-  std::cout << std::endl;
+  output << std::endl;
 }

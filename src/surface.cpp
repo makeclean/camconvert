@@ -90,7 +90,24 @@ void Surface::Identify() {
   } else {
     // if no rotations then we can be cylinders with offsets 
     if(surfaceCoeffs.a7 == 0.0 && surfaceCoeffs.a8 == 0.0 && surfaceCoeffs.a9 == 0.0 ) {
-      surfaceType = GENERAL_QUADRATIC;      
+      // unit size
+      if(surfaceCoeffs.a4 == surfaceCoeffs.a5 && surfaceCoeffs.a6 == 0.0 ) {
+	surfaceType = CYLINDER_Z;
+      } else if (surfaceCoeffs.a4 == surfaceCoeffs.a6 && surfaceCoeffs.a5 == 0.0 ) {
+	surfaceType = CYLINDER_Y;
+      } else if (surfaceCoeffs.a4 == 0.0 && surfaceCoeffs.a5 == surfaceCoeffs.a6 ) {
+	surfaceType = CYLINDER_X;
+      } else if (surfaceCoeffs.a4 != 0.0 && surfaceCoeffs.a5 != 0.0 && surfaceCoeffs.a6 == 0.0 ) {
+	surfaceType = ELLIPTICAL_CYLINDER_Z;
+      } else if (surfaceCoeffs.a4 != 0.0 && surfaceCoeffs.a6 != 0.0 && surfaceCoeffs.a5 == 0.0 ) {
+	surfaceType = ELLIPTICAL_CYLINDER_Y;
+      } else if (surfaceCoeffs.a4 == 0.0 && surfaceCoeffs.a5 != 0.0 && surfaceCoeffs.a6 != 0.0 ) {
+	surfaceType = ELLIPTICAL_CYLINDER_X;
+      }	else if (surfaceCoeffs.a4 == surfaceCoeffs.a5 && surfaceCoeffs.a5 == surfaceCoeffs.a6 ) {
+	surfaceType = SPHERE;
+      } else {
+	surfaceType = GENERAL_QUADRATIC;
+      }
     } else {
       // otherwise fall back onto a general quadratic;
       surfaceType = GENERAL_QUADRATIC;
@@ -110,48 +127,73 @@ int Surface::Evaluate(double x, double y, double z) {
   value += surfaceCoeffs.a9*z*x;
 
   if (value < 0.0 ) return -1;
-  if (value < 0.0 ) return  0;
+  if (value == 0.0 ) return  0;
   if (value > 0.0 ) return  1;
 }
 
 // 
-void Surface::PrintFluka() {
+void Surface::PrintFluka(std::ofstream &output) {
   if(surfaceType == PLANE_X) {
-    std::cout << "YZP S" << surfaceId << "     ";
-    std::cout << surfaceCoeffs.a0 << std::endl;
+    output << "YZP S" << surfaceId << "     ";
+    output << surfaceCoeffs.a0 << std::endl;
   }
   if(surfaceType == PLANE_Y) {
-    std::cout << "XZP S" << surfaceId << "     ";
-    std::cout << surfaceCoeffs.a0 << std::endl;
+    output << "XZP S" << surfaceId << "     ";
+    output << surfaceCoeffs.a0 << std::endl;
   }
   if(surfaceType == PLANE_Z) {
-    std::cout << "XYP S" << surfaceId << "     ";
-    std::cout << surfaceCoeffs.a0 << std::endl;
+    output << "XYP S" << surfaceId << "     ";
+    output << surfaceCoeffs.a0 << std::endl;
   }
   if(surfaceType == GENERAL_PLANE) {
-    std::cout << "PLA S" << surfaceId << "     ";
-    std::cout << surfaceCoeffs.a1 << " " << surfaceCoeffs.a2 << " " << surfaceCoeffs.a3;
-    std::cout << " " << -1.*surfaceCoeffs.a0/surfaceCoeffs.a1;
-    std::cout << " " << -1.*surfaceCoeffs.a0/surfaceCoeffs.a2;    
-    std::cout << " " << -1.*surfaceCoeffs.a0/surfaceCoeffs.a3;
-    std::cout << std::endl;
+    output << "PLA S" << surfaceId << "     ";
+    output << surfaceCoeffs.a1 << " " << surfaceCoeffs.a2 << " " << surfaceCoeffs.a3;
+    output << " " << -1.*surfaceCoeffs.a0/surfaceCoeffs.a1;
+    output << " " << -1.*surfaceCoeffs.a0/surfaceCoeffs.a2;    
+    output << " " << -1.*surfaceCoeffs.a0/surfaceCoeffs.a3;
+    output << std::endl;
+  }
+  if(surfaceType == CYLINDER_X) {
+    output << "XCC S" << surfaceId << "     ";
+    output << surfaceCoeffs.a2 << " " << surfaceCoeffs.a3 << " " << surfaceCoeffs.a5 << std::endl;
+  }
+  if(surfaceType == CYLINDER_Y) {
+    output << "YCC S" << surfaceId << "     ";
+    output << surfaceCoeffs.a1 << " " << surfaceCoeffs.a3 << " " << surfaceCoeffs.a4 << std::endl;
+  }
+  if(surfaceType == CYLINDER_Z) {
+    output << "ZCC S" << surfaceId << "     ";
+    output << surfaceCoeffs.a1 << " " << surfaceCoeffs.a2 << " " << surfaceCoeffs.a5 << std::endl;
+  }
+  if(surfaceType == SPHERE) {
+    output << "SPH S" << surfaceId << "     ";
+    output << surfaceCoeffs.a1 << " " << surfaceCoeffs.a2 << " " << surfaceCoeffs.a3;
+    output << " " << surfaceCoeffs.a4 << std::endl;
+  }
+  if(surfaceType == ELLIPTICAL_CYLINDER_X) {
+    output << "XEC S" << surfaceId << "     ";
+    output << surfaceCoeffs.a2 << " " << surfaceCoeffs.a3 << " ";
+    output << surfaceCoeffs.a5 << " " << surfaceCoeffs.a6 << std::endl;
+  }
+  if(surfaceType == ELLIPTICAL_CYLINDER_Y) {
+    output << "YEC S" << surfaceId << "     ";
+    output << surfaceCoeffs.a1 << " " << surfaceCoeffs.a3 << " ";
+    output << surfaceCoeffs.a4 << " " << surfaceCoeffs.a6 << std::endl;
+  }
+  if(surfaceType == ELLIPTICAL_CYLINDER_Y) {
+    output << "ZEC S" << surfaceId << "     ";
+    output << surfaceCoeffs.a1 << " " << surfaceCoeffs.a2 << " ";
+    output << surfaceCoeffs.a4 << " " << surfaceCoeffs.a5 << std::endl;
   }
   if(surfaceType == GENERAL_QUADRATIC) {
-    std::cout << "QUA S" << surfaceId << "     ";
-    /*
-    std::cout << surfaceCoeffs.a0 << " " << surfaceCoeffs.a1 << "  ";
-    std::cout << surfaceCoeffs.a2 << " " << surfaceCoeffs.a3 << "  ";    
-    std::cout << surfaceCoeffs.a4 << " " << surfaceCoeffs.a5 << "  ";
-    std::cout << surfaceCoeffs.a6 << " " << surfaceCoeffs.a7 << "  ";
-    std::cout << surfaceCoeffs.a8 << " " << surfaceCoeffs.a9 << std::endl; 
-    */
-    std::cout << surfaceCoeffs.a4 << " " << surfaceCoeffs.a5 << "  ";    
-    std::cout << surfaceCoeffs.a6 << " " << surfaceCoeffs.a7 << "  "; 
-    std::cout << surfaceCoeffs.a9 << " " << surfaceCoeffs.a8 << "  "; 
-    std::cout << surfaceCoeffs.a1 << " " << surfaceCoeffs.a2 << "  "; 
-    std::cout << surfaceCoeffs.a3 << " " << surfaceCoeffs.a0 << std::endl; 
+    output << "QUA S" << surfaceId << "     ";
+    output << surfaceCoeffs.a4 << " " << surfaceCoeffs.a5 << "  ";    
+    output << surfaceCoeffs.a6 << " " << surfaceCoeffs.a7 << "  "; 
+    output << surfaceCoeffs.a9 << " " << surfaceCoeffs.a8 << "  "; 
+    output << surfaceCoeffs.a1 << " " << surfaceCoeffs.a2 << "  "; 
+    output << surfaceCoeffs.a3 << " " << surfaceCoeffs.a0 << std::endl; 
   }
   if(surfaceType == UNKNOWN ) {
-    std::cout << surfaceId << " Surface Type not defined!!" << std::endl;
+    output << surfaceId << " Surface Type not defined!!" << std::endl;
   }
 }
