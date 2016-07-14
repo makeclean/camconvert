@@ -55,6 +55,12 @@ private:
 
 private:
   coefficients surfaceCoeffs;
+  /*
+   * senseReverse is to deal with the fact the CAM/CAF format allows the normal of a surface to be defined
+   * this is not allowed in Fluka, as each surface has a defined "sense", therefore in order to use the
+   * prefined surfaces, sometimes the normal will point in the incorrect direction. 
+   */
+  int senseReverse;
   int surfaceType;
   int surfaceId;
 };

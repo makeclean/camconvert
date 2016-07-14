@@ -1,4 +1,5 @@
 #include "volume.hpp"
+#include <algorithm>
 #include <iostream>
 
 // empty constructor
@@ -23,6 +24,11 @@ Volume::Volume(int vol_id, double density, int material_number,
   this->y = y;
   this->z = z;
   this->name = name;
+
+  // get rid of any white space
+  if (this->name.find(" ") != std::string::npos) {
+    replace(this->name.begin(),this->name.end(), ' ','_');
+  }
 }
 
 // set the Id associated with the volume
@@ -70,6 +76,7 @@ void Volume::PrintFluka(std::ofstream &output) {
   Surface *surface;
   for ( int i = 0 ; i < surfaces.size() ; i++ ) {
     int eval = Sense(surfaces[i]);
+    std::cout <<  name << " " << surfaces[i]->GetId() << " " << eval << std::endl;
     if( eval == 1 ) output << "-S"<<surfaces[i]->GetId() << " ";
     if( eval == -1 ) output << "+S"<<surfaces[i]->GetId() << " ";
   }

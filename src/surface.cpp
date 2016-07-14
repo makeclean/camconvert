@@ -15,6 +15,7 @@ Surface::Surface() {
   surfaceCoeffs.a7=0.0;
   surfaceCoeffs.a8=0.0;
   surfaceCoeffs.a9=0.0;
+  senseReverse = 0;
 }
 
 // destructor
@@ -75,10 +76,23 @@ void Surface::Identify() {
       // if no rotations then we are a plane
       if((surfaceCoeffs.a1 == 1.0 || surfaceCoeffs.a1 == -1.0 ) && surfaceCoeffs.a2 == 0.0 && surfaceCoeffs.a3 == 0.0 ) {
 	surfaceType = PLANE_X;
+	if ( surfaceCoeffs.a1 == -1.0 )
+	  senseReverse = 1;
+	else
+	  senseReverse = 0;
       } else if(surfaceCoeffs.a1 == 0.0 && (surfaceCoeffs.a2 == 1.0 || surfaceCoeffs.a2 == -1.0) && surfaceCoeffs.a3 == 0.0 ) {
 	surfaceType = PLANE_Y;
+	if ( surfaceCoeffs.a2 == -1.0 )
+	  senseReverse = 1;
+	else
+	  senseReverse = 0;
+
       }  else if(surfaceCoeffs.a1 == 0.0 && surfaceCoeffs.a2 == 0.0 && (surfaceCoeffs.a3 == 1.0 || surfaceCoeffs.a3 == -1.0) ) {
 	surfaceType = PLANE_Z;
+	if ( surfaceCoeffs.a3 == -1.0 )
+	  senseReverse = 1;
+	else
+	  senseReverse = 0;
       } else { 
 	surfaceType = GENERAL_PLANE;
       }
@@ -92,11 +106,14 @@ void Surface::Identify() {
     if(surfaceCoeffs.a7 == 0.0 && surfaceCoeffs.a8 == 0.0 && surfaceCoeffs.a9 == 0.0 ) {
       // unit size
       if(surfaceCoeffs.a4 == surfaceCoeffs.a5 && surfaceCoeffs.a6 == 0.0 ) {
-	surfaceType = CYLINDER_Z;
+	//	surfaceType = CYLINDER_Z;
+	surfaceType = GENERAL_QUADRATIC;
       } else if (surfaceCoeffs.a4 == surfaceCoeffs.a6 && surfaceCoeffs.a5 == 0.0 ) {
-	surfaceType = CYLINDER_Y;
+	//	surfaceType = CYLINDER_Y;
+	surfaceType = GENERAL_QUADRATIC;
       } else if (surfaceCoeffs.a4 == 0.0 && surfaceCoeffs.a5 == surfaceCoeffs.a6 ) {
-	surfaceType = CYLINDER_X;
+	//	surfaceType = CYLINDER_X;
+	surfaceType = GENERAL_QUADRATIC;
       } else if (surfaceCoeffs.a4 != 0.0 && surfaceCoeffs.a5 != 0.0 && surfaceCoeffs.a6 == 0.0 ) {
 	surfaceType = ELLIPTICAL_CYLINDER_Z;
       } else if (surfaceCoeffs.a4 != 0.0 && surfaceCoeffs.a6 != 0.0 && surfaceCoeffs.a5 == 0.0 ) {
@@ -126,9 +143,15 @@ int Surface::Evaluate(double x, double y, double z) {
   value += surfaceCoeffs.a8*y*z;
   value += surfaceCoeffs.a9*z*x;
 
-  if (value < 0.0 ) return -1;
-  if (value == 0.0 ) return  0;
-  if (value > 0.0 ) return  1;
+  if (senseReverse == 1) {
+    if (value < 0.0 ) return  1;
+    if (value == 0.0 ) return  0;
+    if (value > 0.0 ) return  -1;
+  } else {
+    if (value < 0.0 ) return -1;
+    if (value == 0.0 ) return  0;
+    if (value > 0.0 ) return  1;
+  }
 }
 
 // 
@@ -148,9 +171,19 @@ void Surface::PrintFluka(std::ofstream &output) {
   if(surfaceType == GENERAL_PLANE) {
     output << "PLA S" << surfaceId << "     ";
     output << surfaceCoeffs.a1 << " " << surfaceCoeffs.a2 << " " << surfaceCoeffs.a3;
-    output << " " << -1.*surfaceCoeffs.a0/surfaceCoeffs.a1;
-    output << " " << -1.*surfaceCoeffs.a0/surfaceCoeffs.a2;    
-    output << " " << -1.*surfaceCoeffs.a0/surfaceCoeffs.a3;
+    if(surfaceCoeffs.a1 != 0.0 )
+      output << " " << 1.*surfaceCoeffs.a0/surfaceCoeffs.a1;
+    else
+      output << " " << 0.0;
+    if(surfaceCoeffs.a2 != 0.0 )
+      output << " " << 1.*surfaceCoeffs.a0/surfaceCoeffs.a2;    
+    else
+      output << " " << 0.0;
+    if(surfaceCoeffs.a3 != 0.0 ) 
+      output << " " << 1.*surfaceCoeffs.a0/surfaceCoeffs.a3;
+    else
+      output << " " << 0.0;
+     
     output << std::endl;
   }
   if(surfaceType == CYLINDER_X) {
